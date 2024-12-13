@@ -1,0 +1,28 @@
+# Usa la imagen oficial de Python como base
+FROM python:3.9-slim
+
+# Instala las dependencias del sistema necesarias
+RUN apt-get update && apt-get install -y \
+    libpq-dev gcc && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Establece el directorio de trabajo
+WORKDIR /app
+
+# Copia el archivo de requerimientos
+COPY requirements.txt .
+
+# Instala las dependencias de Python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copia todos los archivos al directorio de trabajo
+COPY . .
+
+# Expone el puerto predeterminado de Streamlit
+EXPOSE 8502
+
+# Punto de entrada para Streamlit
+CMD ["streamlit", "run", "./app.py", "--server.port=8502"]
+
+# docker run -p 8502:8502 streamlit-app
+# docker run -p 8502:8502 -v "$(pwd):/app" streamlit-app
