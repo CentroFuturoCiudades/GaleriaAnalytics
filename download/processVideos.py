@@ -21,13 +21,19 @@ model = YOLO('best.pt')
 Base = declarative_base()
 videos_galeria_path = 'videosGaleria'
 
+dbname = os.getenv('DB_NAME')
+user = os.getenv('DB_USER')
+password = os.getenv('DB_PASSWORD')
+host = os.getenv('DB_HOST')
+port = os.getenv('DB_PORT')
+
 # Database setup (PostgreSQL)
 DB_CONFIG = {
-    'dbname': 'galeria',
-    'user': 'postgres',
-    'password': 'new_password',
-    'host': 'localhost',
-    'port': '5433'
+    'dbname': dbname,
+    'user': user,
+    'password': password,
+    'host': host,
+    'port': port
 }
 DATABASE_URL = f"postgresql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['dbname']}"
 engine = create_engine(DATABASE_URL)
@@ -151,14 +157,19 @@ def split_list(lst, n):
 def process_video_batch(video_files, video_ids):
     """Process a batch of videos."""
     local_video_data = []
+    processed_files = []
     for video_path, video_id in zip(video_files, video_ids):
         try:
             data = process_video(video_path, video_id)
             if data:
                 local_video_data.extend(data)
-                delete_video_file(video_path)  # Delete the file after processing
+                _LOGGER.info(f"Attempting to delete video file: {video_path}")
+                processed_files.append(video_path)
+
         except Exception as e:
             _LOGGER.error(f"Error processing video {video_path}: {e}")
+    for video_path in processed_files:
+        delete_video_file(video_path)
     return local_video_data
 
 def main():
@@ -197,19 +208,23 @@ if __name__ == "__main__":
 
 
 
-
-# CREATE TABLE video_recorded (
-#     id VARCHAR(255) PRIMARY KEY,
-#     camera VARCHAR(255),
-#     date_observed TIMESTAMP NOT NULL,
-#     path VARCHAR(255) NOT NULL
+# -- Crear la tabla video_recorded
+# CREATE TABLE public.video_recorded (
+#     id character varying(255) NOT NULL,
+#     camera character varying(255),
+#     date_observed timestamp without time zone NOT NULL,
+#     path character varying(255) NOT NULL,
+#     CONSTRAINT video_recorded_pkey PRIMARY KEY (id)
 # );
 
-# CREATE TABLE tracks (
-#     id SERIAL PRIMARY KEY,
-#     video_id VARCHAR(255) NOT NULL,
-#     track_id VARCHAR(255) ,
-#     duration FLOAT ,
-#     direction VARCHAR(255),
-#     FOREIGN KEY (video_id) REFERENCES videos (id)
+# -- Crear la tabla tracks
+# CREATE TABLE public.tracks (
+#     id integer NOT NULL DEFAULT nextval('tracks_id_seq'::regclass),
+#     video_id character varying(255) NOT NULL,
+#     track_id character varying(255),
+#     duration double precision,
+#     direction character varying(255),
+#     CONSTRAINT tracks_pkey PRIMARY KEY (id),
+#     CONSTRAINT tracks_video_id_fkey FOREIGN KEY (video_id)
+#         REFERENCES public.video_recorded(id)
 # );

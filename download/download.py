@@ -16,13 +16,18 @@
 #         self.blob_service_client = BlobServiceClient(self.account_url, credential=sas_token)
 #         self.verbose = verbose
 
+#         db_name = os.getenv("DB_NAME")
+#         user = os.getenv("DB_USER")
+#         password = os.getenv("DB_PASSWORD")
+#         host = os.getenv("DB_HOST")
+#         port = os.getenv("DB_PORT")
 #         # Database configuration
 #         self.db_config = db_config or {
-#             "dbname": "galeria",
-#             "user": "postgres",
-#             "password": "new_password",
-#             "host": "localhost",
-#             "port": "5433"
+#             "dbname": db_name,
+#             "user": user,
+#             "password": password,
+#             "host": host,
+#             "port": port
 #         }
 
 #     def _connect_to_db(self):
@@ -169,14 +174,18 @@ class AzureVideos:
         self.default_container = default_container
         self.blob_service_client = BlobServiceClient(self.account_url, credential=sas_token)
         self.verbose = verbose
-
+        db_name = os.getenv("DB_NAME")
+        user = os.getenv("DB_USER")
+        password = os.getenv("DB_PASSWORD")
+        host = os.getenv("DB_HOST")
+        port = os.getenv("DB_PORT")
         # Database configuration
         self.db_config = db_config or {
-            "dbname": "galeria",
-            "user": "postgres",
-            "password": "new_password",
-            "host": "localhost",
-            "port": "5433"
+            "dbname": db_name,
+            "user": user,
+            "password": password,
+            "host": host,
+            "port": port
         }
 
     def _connect_to_db(self):

@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  streamlit-app:
+    build:
+      context: .  # El directorio actual tiene el Dockerfile
+    container_name: streamlit_app
+    environment:
+      DATABASE_HOST: ""  # Nombre del servicio PostgreSQL
+      DATABASE_PORT: ""  # Puerto interno del contenedor PostgreSQL
+      DATABASE_USER: ""
+      DATABASE_PASSWORD: ""
+      DATABASE_NAME: ""
+    ports:
+      - "8502:8502"  # Exponer el puerto de Streamlit
+    networks:
+      - my_network  # Conectar al mismo network que PostgreSQL
+
+networks:
+  my_network:
+    external: true  # Usar una red externa creada previamente
+
+volumes:
+  postgres_data: {}  # Definir volumen vacío para persistencia de datos
+
+
+

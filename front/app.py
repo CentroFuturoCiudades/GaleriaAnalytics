@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
-import sqlite3
 import altair as alt
 import psycopg2
+from sqlalchemy import create_engine
+import os
 # Configurar la página de Streamlit
 st.set_page_config(page_title="Video Tracking Analysis", layout="wide")
 
@@ -12,33 +13,31 @@ alt.data_transformers.disable_max_rows()
 # Título de la aplicación
 st.title("Análisis de Rastreo de Videos")
 
+
 # Ruta del archivo SQLite
 # db_path = "./tracking_results.db"  # Cambia esto al path donde está tu archivo .db
 
 # Configuración de la base de datos PostgreSQL
-db_host = "10.0.0.7"
-db_name = "galeria"
-db_user = "postgres"
-db_password = "new_password"
-db_port = "5433"  # Asegúrate de especificar el puerto correctamente, si es diferente al predeterminado 5432
+db_host = os.getenv('DB_HOST')
+db_name = os.getenv('DB_NAME')
+db_user = os.getenv('DB_USER')
+db_password = os.getenv('DB_PASSWORD')
+db_port = os.getenv('DB_PORT')
 
-# Conectarse a la base de datos PostgreSQL
-conn = psycopg2.connect(
-    host=db_host,
-    database=db_name,
-    user=db_user,
-    password=db_password,
-    port=db_port  # Especificamos el puerto, ya que es diferente al predeterminado 5432
-)
+database_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+engine = create_engine(database_url)
+
 
 try:
+    st.success("Conexión exitosa a la base de datos PostgreSQL")
     # Conectarse a la base de datos SQLite
     # conn = sqlite3.connect(db_path)
     # st.write(f"Conectado a la base de datos: `{db_path}`")
     st.write(f"Conectado a la base de datos PostgreSQL: `{db_name}`")
     # Obtener las tablas disponibles
     query = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';"
-    tables = pd.read_sql(query, conn)
+    tables = pd.read_sql(query, engine)
+
 
     # Mostrar las tablas
     st.write("### Tablas en la base de datos:")
@@ -50,7 +49,8 @@ try:
 
     if selected_table:
         # Leer los datos de la tabla seleccionada
-        df = pd.read_sql(f"SELECT * FROM {selected_table}", conn)
+        df = pd.read_sql(f"SELECT * FROM {selected_table}", engine)
+
         st.write("### Datos Originales")
         st.dataframe(df)
 
@@ -311,15 +311,6 @@ try:
 
         # Renderizar en Streamlit
         st.altair_chart(hex_chart, use_container_width=True)
-
-
-# cambiar la base de datos a postgresql, una tabla para los videos(id, camara, fecha), uno a muchos, con una tabla de id de personas, duration, direccion,
-
-# pasos
-# primero tener una clase con metodos para gestionar el context broker, esta clase obtener todas la entidades de la galeria, o por fecha orionManager es la clase, tambien se puede filtrar por id
-# dos en otra clase, hacer el login arloMAnger, con el servidor de arlo y se comunica con la base de datos del frontend
-
-    conn.close()
 
 except Exception as e:
     st.error(f"Error al procesar los datos: {e}")

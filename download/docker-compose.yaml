@@ -1,0 +1,24 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres_service
+    environment:
+      POSTGRES_USER: 
+      POSTGRES_PASSWORD: 
+      POSTGRES_DB: 
+    ports:
+      - "5432:5432"  # Usar el puerto 5432 para la conexión interna y externa
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persistencia de datos
+    networks:
+      - my_network  # Usar la red externa
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  my_network:
+    external: true  # Conectar a una red externa ya existente
