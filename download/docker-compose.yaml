@@ -5,20 +5,26 @@ services:
     image: postgres:15
     container_name: postgres_service
     environment:
-      POSTGRES_USER: 
-      POSTGRES_PASSWORD: 
-      POSTGRES_DB: 
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: new_password
+      POSTGRES_DB: galeria
     ports:
-      - "5432:5432"  # Usar el puerto 5432 para la conexión interna y externa
+      - "5433:5432"  # Mapeamos el puerto 5432 interno a 5433 externo para evitar conflictos
     volumes:
-      - postgres_data:/var/lib/postgresql/data # Persistencia de datos
+      - postgres_data:/var/lib/postgresql/data
     networks:
-      - my_network  # Usar la red externa
-
+      - my_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped  # 🔁 Auto-restart policy
 volumes:
   postgres_data:
     driver: local
 
 networks:
   my_network:
-    external: true  # Conectar a una red externa ya existente
+    name: my_network
+    driver: bridge

@@ -5,6 +5,7 @@ import json
 from typing import List
 from dotenv import load_dotenv
 
+
 class OrionManager:
     def __init__(self, client_id: str, client_secret: str, keycloak_url: str, orion_url: str):
         """
@@ -69,16 +70,22 @@ class OrionManager:
         offset = 0
         filtered_paths = []
 
-        headers = {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": f"Bearer {self.get_token()}"
-        }
-
         while True:
+            headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": f"Bearer {self.get_token()}"
+            }
+
             params = {"type": entity_type, "limit": batch_size, "offset": offset}
             try:
                 response = requests.get(f"{self.orion_url}/v1/entities", params=params, headers=headers)
+                if response.status_code == 401:
+                    print("⚠️ Token expired, refreshing token and retrying...")
+                    self.obtain_token()
+                    headers["Authorization"] = f"Bearer {self.token}"
+                    response = requests.get(f"{self.orion_url}/v1/entities", params=params, headers=headers)
+
                 response.raise_for_status()
                 entities = response.json()
 
